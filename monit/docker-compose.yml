@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  haproxy-exporter:
+    image: prom/haproxy-exporter:latest
+    ports:
+      - "9101:9101"
+    command:
+      - --haproxy.scrape-uri=http://host.docker.internal:8404/stats;csv
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - haproxy-exporter
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  grafana-storage:
+

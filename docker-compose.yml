@@ -1,0 +1,36 @@
+version: "3.0"
+
+services:
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy-lb
+    ports:
+      - "80:80"
+      - "8404:8404"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - haproxy-network
+    restart: always
+
+  web1:
+    image: nginx:latest
+    container_name: web1
+    volumes:
+      - ./backend/web1/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - haproxy-network
+    restart: always
+
+  web2:
+    image: nginx:latest
+    container_name: web2
+    volumes:
+      - ./backend/web2/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - haproxy-network
+    restart: always
+
+networks:
+  haproxy-network:
+    driver: bridge
